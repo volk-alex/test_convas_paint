@@ -26,14 +26,39 @@
 		<script>
 			const canvas = document.getElementById("game");
 			const ctx = canvas.getContext("2d");
-			const rect = canvas.getBoundingClientRect();
+			const radarScale = 1/100;
+			const planeSpeed = 250;
 			
-			ctx.strokeStyle = "red";
-			ctx.lineWidth = 5;
-			ctx.imageSmoothingEnabled = false;
-			//ctx.lineCap = "round";
+			let asincClickX, asincClickY;
 			
-			ctx.beginPath();
+			let previousTimeStamp = Date.now();
+			
+			let planeX, planeY, planeHeading, planeSpeedX, planeSpeedY,
+			planeDestinationHeading, planeRotationDirection;
+			let runwayX, runwayY, runwayAzimuth, runwayLength, runwayWidth;
+			
+			let radarDistantionFromRunway, radarDistantionFromRunwayStart,
+			radarSide;
+			
+			//расчёт положения ВПП относительно начала отсчёта
+			runwayAzimuth = Math.random() * Math.PI * 2 - Math.PI;
+			runwayLength = Math.round( Math.random() * 8 ) * 250 + 1000;
+			runwayWidth = Math.random() * 40 + 10;
+			radarDistantionFromRunway = Math.random() * 200 + 100;
+			radarDistantionFromRunwayStart = Math.random() *
+			( radarDistantionFromRunway * 2 + runwayLength ) - 
+			radarDistantionFromRunway;
+			radarSide = Math.round( Math/random() ) * 2 - 1;
+			runwayX = Math.cos( runwayAzimuth ) *
+			radarDistantionFromRunwayStart + 
+			Math.cos( ( runwayAzimuth + Math.PI/2 * radarSide )) *
+			radarDistantionFromRunway;
+			runwayY = Math.sin( runwayAzimuth ) *
+			radarDistantionFromRunwayStart + 
+			Math.sin( ( runwayAzimuth + Math.PI/2 * radarSide ) ) *
+			radarDistantionFromRunway;
+			
+			// асинхронно получаем клики по хосту
 			canvas.addEventListener("pointerdown", (event) => {
 				let scale, top, left;
 				if(canvas.clientWidth/canvas.clientHeight<16/9){
@@ -46,9 +71,48 @@
 					top = 0;
 				}
 				
-				ctx.lineTo((event.clientX-left)*scale, (event.clientY-top)*scale);
-				ctx.stroke();
+				asincClickX = ( event.clientX - left ) * scale;
+				asincClickY = ( event.clientY - top ) * scale;
 			});
+			
+			// игровой цикл
+			while(true) {
+				
+				// этап расчёта
+				let period, curentTimeStamp;
+				
+				curentTimeStamp = Date.now();
+				period = curentTimeStamp - previousTimeStamp;
+				
+				if ( period > 1 ) {
+					period = 1;
+				}
+				
+				// генерация самолёта
+				if ( planeX == null ) {
+					// TODO: придумать
+				}
+				
+				// обработка нажатия мыши
+				if (asincClickX != null) {
+					let differenceHeading, differenceX, differenceY;
+					
+					differenceX = asincClickX - 
+				}
+				
+				// расчёт следующего положения самолёта
+				if ( planeDestinationHeading != null ) {
+					// обработка для случая движения по кривой
+					planeHeading += period * Math.PI/21 * planeRotationDirection;
+					
+					if ( Math.abs( planeDestinationHeading - planeHeading ) < Math.PI/20 ) {
+						planeHeading = planeDestinationHeading;
+						planeDestinationHeading = null;
+					}
+					
+				}
+			}
+			
 		</script>
 	</body>
 </html>
