@@ -109,8 +109,17 @@
 						planeHeading = planeDestinationHeading;
 						planeDestinationHeading = null;
 					}
-					
+          
+					planeSpeedX = Math.cos(planeHeading) * planeSpeed;
+          planeSpeedY = Math.sin(planeHeading) * planeSpeed;
 				}
+
+        planeX += planeSpeedX;
+        planeY += planeSpeedY;
+
+        // этап отрисовки
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
 			}
 			
 		</script>
