@@ -23,168 +23,218 @@
 	</head>
 	<body>
 		<canvas id="game" width="640" height="360"></canvas>
-		<script>
-      "use strict";
-      
+	    <script>
+			"use strict";
+
 			const canvas = document.getElementById("game");
 			const ctx = canvas.getContext("2d");
-			const radarScale = 1/100;
+			const radarScale = 1 / 100;
 			const planeSpeed = 150;
-      const planeRotationSpeed = Math.PI/20;
-			
+			const planeRotationSpeed = Math.PI / 50;
+
 			let asincClickX, asincClickY;
-			
+
 			let previousTimeStamp = Date.now();
-			
-			let planeX, planeY, planeHeading, planeSpeedX, planeSpeedY,
-			planeDestinationHeading, planeRotationDirection;
+
+			let planeX,
+				planeY,
+				planeHeading,
+				planeSpeedX,
+				planeSpeedY,
+				planeDestinationHeading,
+				planeRotationDirection;
 			let runwayX, runwayY, runwayAzimuth, runwayLength, runwayWidth;
-			
-			let radarDistantionFromRunway, radarDistantionFromRunwayStart,
-			radarSide;
-			
+
+			let radarDistantionFromRunway, radarDistantionFromRunwayStart, radarSide;
+
 			//расчёт положения ВПП относительно начала отсчёта
 			runwayAzimuth = Math.random() * Math.PI * 2 - Math.PI;
-			runwayLength = Math.round( Math.random() * 8 ) * 250 + 1000;
+			runwayLength = Math.round(Math.random() * 8) * 250 + 1000;
 			runwayWidth = Math.random() * 40 + 10;
 			radarDistantionFromRunway = Math.random() * 200 + 100;
-			radarDistantionFromRunwayStart = Math.random() *
-			( radarDistantionFromRunway * 2 + runwayLength ) - 
-			radarDistantionFromRunway;
-			radarSide = Math.round( Math.random() ) * 2 - 1;
-			runwayX = Math.cos( runwayAzimuth ) *
-			radarDistantionFromRunwayStart + 
-			Math.cos( ( runwayAzimuth + Math.PI/2 * radarSide )) *
-			radarDistantionFromRunway;
-			runwayY = Math.sin( runwayAzimuth ) *
-			radarDistantionFromRunwayStart + 
-			Math.sin( ( runwayAzimuth + Math.PI/2 * radarSide ) ) *
-			radarDistantionFromRunway;
-			
+			radarDistantionFromRunwayStart =
+				Math.random() * (radarDistantionFromRunway * 2 + runwayLength) -
+				radarDistantionFromRunway;
+			radarSide = Math.round(Math.random()) * 2 - 1;
+			runwayX =
+				Math.cos(runwayAzimuth - Math.PI) * radarDistantionFromRunwayStart +
+				Math.cos(normolizeAngle(runwayAzimuth + (Math.PI / 2) * radarSide)) *
+				radarDistantionFromRunway;
+			runwayY =
+				Math.sin(runwayAzimuth - Math.PI) * radarDistantionFromRunwayStart +
+				Math.sin(normolizeAngle(runwayAzimuth + (Math.PI / 2) * radarSide)) *
+				radarDistantionFromRunway;
+
 			// асинхронно получаем клики по холсту
 			canvas.addEventListener("pointerdown", (event) => {
 				let scale, top, left;
-				if(canvas.clientWidth/canvas.clientHeight<16/9){
-					scale = (canvas.width/canvas.clientWidth);
+				if (canvas.clientWidth / canvas.clientHeight < 16 / 9) {
+					scale = canvas.width / canvas.clientWidth;
 					left = 0;
-					top = (canvas.clientHeight-canvas.height/scale)/2;
+					top = (canvas.clientHeight - canvas.height / scale) / 2;
 				} else {
-					scale = (canvas.height/canvas.clientHeight)
-					left = (canvas.clientWidth-canvas.width/scale)/2;
+					scale = canvas.height / canvas.clientHeight;
+					left = (canvas.clientWidth - canvas.width / scale) / 2;
 					top = 0;
 				}
-				
-				asincClickX = ( event.clientX - left) * scale;
-				asincClickY = ( event.clientY - top) * scale;
+
+				asincClickX = (event.clientX - left) * scale;
+				asincClickY = (event.clientY - top) * scale;
 			});
-      
+
 			// игровой цикл
 			function gameLoop() {
-				
 				// этап расчёта
 				let period, curentTimeStamp;
-				
+
 				curentTimeStamp = Date.now();
-				period = (curentTimeStamp - previousTimeStamp) /100;
-        previousTimeStamp = curentTimeStamp;
-				
-				if ( period > 1 ) {
+				period = (curentTimeStamp - previousTimeStamp) / 100;
+				previousTimeStamp = curentTimeStamp;
+
+				if (period > 1) {
 					period = 1;
 				}
-				
-				// генерация самолёта
-				if ( planeX == null ) {
-          let radarRadius, planeAzimuth;
-					radarRadius = ( canvas.height/2 - 4 ) / radarScale;
-          planeAzimuth = Math.random() * 2 * Math.PI - Math.PI;
 
-          planeX = radarRadius * Math.cos(planeAzimuth);
-          planeY = radarRadius * Math.sin(planeAzimuth);
-          planeHeading = (Math.PI / 3 * Math.random() * 2 - Math.PI / 3 - planeAzimuth)%Math.PI;
-          planeSpeedX = Math.cos(planeHeading) * planeSpeed;
-          planeSpeedY = Math.sin(planeHeading) * planeSpeed;
+				// генерация самолёта
+				if (planeX == null) {
+					let radarRadius, planeAzimuth;
+					radarRadius = (canvas.height / 2 - 4) / radarScale;
+					planeAzimuth = Math.random() * 2 * Math.PI - Math.PI;
+
+					planeX = radarRadius * Math.cos(planeAzimuth);
+					planeY = radarRadius * Math.sin(planeAzimuth);
+					planeHeading = normolizeAngle(
+						(Math.PI / 3) * Math.random() * 2 - Math.PI / 3 - planeAzimuth,
+					);
+					planeSpeedX = Math.cos(planeHeading) * planeSpeed;
+					planeSpeedY = Math.sin(planeHeading) * planeSpeed;
 				}
-				
+
 				// обработка нажатия мыши
 				if (asincClickX != null) {
 					let differenceHeading, differenceX, differenceY;
-					
-					differenceX = (asincClickX - canvas.width/2) / radarScale - planeX;
-          differenceY = (asincClickY -canvas.height/2) / radarScale - planeY;
-          planeDestinationHeading = Math.atan2(differenceY, differenceX);
-          differenceHeading = planeDestinationHeading - planeHeading;
-          if (differenceHeading < 0) {
-            planeRotationDirection = -1;
-          } else {
-            planeRotationDirection = 1;
-          }
 
-          if (Math.abs(differenceHeading) > Math.PI) {
-            planeRotationDirection *= -1;
-          }
-          
-          asincClickX = null;
-          console.log(planeDestinationHeading);
+					differenceX = (asincClickX - canvas.width / 2) / radarScale - planeX;
+					differenceY = (asincClickY - canvas.height / 2) / radarScale - planeY;
+					planeDestinationHeading = Math.atan2(differenceY, differenceX);
+					differenceHeading = normolizeAngle(planeDestinationHeading - planeHeading);
+					if (differenceHeading < 0) {
+						planeRotationDirection = -1;
+					} else {
+						planeRotationDirection = 1;
+					}
+
+					if (Math.abs(differenceHeading) > Math.PI) {
+						planeRotationDirection *= -1;
+					}
+
+					asincClickX = null;
 				}
-				
+
 				// расчёт следующего положения самолёта
-				if ( planeDestinationHeading != null ) {
+				if (planeDestinationHeading != null) {
 					// обработка для случая движения по кривой
-          let planeNextHeading;
-          planeNextHeading = (planeHeading + period * Math.PI/21 * planeRotationDirection) % Math.PI;
-          if ( ( planeRotationDirection > 0 && planeNextHeading > planeDestinationHeading ) ||
-               ( planeRotationDirection < 0 && planeNextHeading < planeDestinationHeading) ) {
-            planeHeading = planeDestinationHeading;
+					let planeNextHeading, planeHeadingDifirential;
+					planeNextHeading = normolizeAngle(
+						planeHeading + (period * planeRotationSpeed) * planeRotationDirection,
+					);
+					planeHeadingDifirential = normolizeAngle(
+						planeNextHeading - planeDestinationHeading
+					);
+
+					if ((planeRotationDirection > 0 && planeHeadingDifirential > 0) || (planeRotationDirection < 0 && planeHeadingDifirential < 0)) {
+						planeNextHeading = planeDestinationHeading;
 						planeDestinationHeading = null;
-          }
-					
+					}
+					planeHeading = planeNextHeading;
+
 					planeSpeedX = Math.cos(planeHeading) * planeSpeed;
-          planeSpeedY = Math.sin(planeHeading) * planeSpeed;
-          //console.log(planeX);
+					planeSpeedY = Math.sin(planeHeading) * planeSpeed;
+					console.log(planeNextHeading);
 				}
 
-        // прямолинейное движение
+				// прямолинейное движение
 
-        planeX += planeSpeedX * period;
-        planeY += planeSpeedY * period;
+				planeX += planeSpeedX * period;
+				planeY += planeSpeedY * period;
+				
+				//TODO: заход на посадку, вылет за пределы круга, подсчёт очков.
+				
 
-        //console.log(planeSpeedX);
 
-        // этап отрисовки
-        let centerX, centerY;
-        centerX = canvas.width/2;
-        centerY = canvas.height/2;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "green";
-        ctx.arc(centerX, centerY, canvas.height/2-2, 0, 2 * Math.PI);
-        ctx. stroke();
+				//TODO: изменение масштаба
+				
+				// этап отрисовки
+				let centerX, centerY, locatorAngle;
+				centerX = canvas.width / 2;
+				centerY = canvas.height / 2;
+				locatorAngle = ((Date.now() / 5000) % 1) * (Math.PI * 2);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.beginPath();
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "green";
+				ctx.moveTo(centerX, centerY);
+				ctx.arc(
+					centerX,
+					centerY,
+					canvas.height / 2 - 2,
+					locatorAngle,
+					locatorAngle + 2 * Math.PI,
+				);
+				ctx.stroke();
 
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "green";
-        ctx.arc(centerX + planeX * radarScale, centerY + planeY * radarScale, 5, 0, Math.PI * 2);
-        ctx.stroke();
+				ctx.beginPath();
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "green";
+				ctx.arc(
+					centerX + planeX * radarScale,
+					centerY + planeY * radarScale,
+					5,
+					0,
+					Math.PI * 2,
+				);
+				ctx.stroke();
 
-        ctx.beginPath;
-        ctx.fillStyle = "green"; 
-        ctx.font = "20px Arial";
-        ctx.fillText(Math.round(planeX) + " " +Math.round(planeY), centerX + planeX * radarScale, centerY + planeY * radarScale);
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.strokeStyle = "green";
-        ctx.lineWidth = runwayWidth*radarScale;
-        if (ctx.lineWidth < 2) {
-          ctx.lineWidth = 2;
-        }
-        ctx.moveTo(centerX + runwayX * radarScale, centerY + runwayY * radarScale);
-        ctx.lineTo(centerX + runwayX * radarScale + runwayLength * radarScale * Math.cos(runwayAzimuth), centerY + runwayY * radarScale + runwayLength * radarScale * Math.sin(runwayAzimuth));
-        ctx.stroke();
-        requestAnimationFrame(gameLoop);
+				ctx.beginPath;
+				ctx.fillStyle = "green";
+				ctx.font = "20px Arial";
+				ctx.fillText(
+					Math.round(planeX) + " " + Math.round(planeY),
+					centerX + planeX * radarScale,
+					centerY + planeY * radarScale,
+				);
+				ctx.stroke();
+
+				ctx.beginPath();
+				ctx.strokeStyle = "green";
+				ctx.lineWidth = runwayWidth * radarScale;
+				if (ctx.lineWidth < 2) {
+					ctx.lineWidth = 2;
+				}
+				ctx.moveTo(centerX + runwayX * radarScale, centerY + runwayY * radarScale);
+				ctx.lineTo(
+					centerX +
+					runwayX * radarScale +
+					runwayLength * radarScale * Math.cos(runwayAzimuth),
+					centerY +
+					runwayY * radarScale +
+					runwayLength * radarScale * Math.sin(runwayAzimuth),
+				);
+				ctx.stroke();
+				requestAnimationFrame(gameLoop);
 			}
-      requestAnimationFrame(gameLoop);
+			requestAnimationFrame(gameLoop);
+
+			function normolizeAngle(angle) {
+				angle = angle % (2 * Math.PI);
+				if (angle > Math.PI) {
+					return angle - 2 * Math.PI;
+				} else if (angle < -Math.PI) {
+					return angle + 2 * Math.PI;
+				}
+
+				return angle;
+			}
 		</script>
 	</body>
 </html>
