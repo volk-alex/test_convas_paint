@@ -159,8 +159,8 @@
 				planeY += planeSpeedY * period;
 				
 				//TODO: заход на посадку, вылет за пределы круга, подсчёт очков.
-				
-
+				if ((canvas.height / 2 - 4) / radarScale < (planeX*planeX + planeY*planeY)**(1/2)) planeX = null;
+        
 
 				//TODO: изменение масштаба
 				
@@ -194,6 +194,20 @@
 					Math.PI * 2,
 				);
 				ctx.stroke();
+
+        //TODO: нарисовать стрелочку направления полета
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "green";
+        ctx.moveTo(
+          centerX + planeX * radarScale,
+					centerY + planeY * radarScale
+        );
+        let strokeEndX, strokeEndY;
+        strokeEndX = centerX + (planeX + Math.cos(planeHeading)*(10/radarScale)) * radarScale;
+        strokeEndY = centerY + (planeY + Math.sin(planeHeading)*(10/radarScale)) * radarScale;
+        ctx.lineTo(strokeEndX, strokeEndY);
+        ctx.stroke();
 
 				ctx.beginPath;
 				ctx.fillStyle = "green";
