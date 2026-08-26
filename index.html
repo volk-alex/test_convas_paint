@@ -22,7 +22,7 @@
 		</style>
 	</head>
 	<body>
-		<canvas id="game" width="640" height="360"></canvas>
+		<canvas id="game" width="360" height="360"></canvas>
 	    <script>
 			"use strict";
 
@@ -97,14 +97,14 @@
 
 				// генерация самолёта
 				if (planeX == null) {
-					let radarRadius, planeAzimuth;
+					let radarRadius, planeAzimuthFromRadar;
 					radarRadius = (canvas.height / 2 - 4) / radarScale;
-					planeAzimuth = Math.random() * 2 * Math.PI - Math.PI;
+					planeAzimuthFromRadar = Math.random() * 2 * Math.PI - Math.PI;
 
-					planeX = radarRadius * Math.cos(planeAzimuth);
-					planeY = radarRadius * Math.sin(planeAzimuth);
+					planeX = radarRadius * Math.cos(planeAzimuthFromRadar);
+					planeY = radarRadius * Math.sin(planeAzimuthFromRadar);
 					planeHeading = normolizeAngle(
-						(Math.PI / 3) * Math.random() * 2 - Math.PI / 3 - planeAzimuth,
+						(Math.PI / 3) * Math.random() * 2 - Math.PI / 3 + (planeAzimuthFromRadar - Math.PI)
 					);
 					planeSpeedX = Math.cos(planeHeading) * planeSpeed;
 					planeSpeedY = Math.sin(planeHeading) * planeSpeed;
@@ -195,21 +195,20 @@
 				);
 				ctx.stroke();
 
-        //TODO: нарисовать стрелочку направления полета
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "green";
-        ctx.moveTo(
-          centerX + planeX * radarScale,
+				ctx.beginPath();
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "green";
+				ctx.moveTo(
+					centerX + planeX * radarScale,
 					centerY + planeY * radarScale
-        );
-        let strokeEndX, strokeEndY;
-        strokeEndX = centerX + (planeX + Math.cos(planeHeading)*(10/radarScale)) * radarScale;
-        strokeEndY = centerY + (planeY + Math.sin(planeHeading)*(10/radarScale)) * radarScale;
-        ctx.lineTo(strokeEndX, strokeEndY);
-        ctx.stroke();
+				);
+				let strokeEndX, strokeEndY;
+				strokeEndX = centerX + (planeX + Math.cos(planeHeading)*(10/radarScale)) * radarScale;
+				strokeEndY = centerY + (planeY + Math.sin(planeHeading)*(10/radarScale)) * radarScale;
+				ctx.lineTo(strokeEndX, strokeEndY);
+				ctx.stroke();
 
-				ctx.beginPath;
+				/*ctx.beginPath;
 				ctx.fillStyle = "green";
 				ctx.font = "20px Arial";
 				ctx.fillText(
@@ -217,7 +216,7 @@
 					centerX + planeX * radarScale,
 					centerY + planeY * radarScale,
 				);
-				ctx.stroke();
+				ctx.stroke();*/
 
 				ctx.beginPath();
 				ctx.strokeStyle = "green";
